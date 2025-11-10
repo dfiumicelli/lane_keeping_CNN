@@ -13,10 +13,9 @@
   <depend>cv_bridge</depend>
   <depend>opencv-python</depend>
   <depend>numpy</depend>
-  <depend>torch</depend>
-  <depend>segmentation_models_pytorch</depend>
   <depend>geometry_msgs</depend>
   <depend>onnxruntime</depend>
+  <depend>ament_index_python</depend>
   
 
   <test_depend>ament_copyright</test_depend>
