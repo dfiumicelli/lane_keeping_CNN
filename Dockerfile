@@ -7,9 +7,9 @@ RUN apt-get update && apt-get install -y \
     ros-humble-sensor-msgs \
     ros-humble-image-transport \
     ros-humble-geometry-msgs \
+    ros-humble-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
 
-# FIX: Installa NumPy 1.x PRIMA di onnxruntime
 RUN pip3 install --no-cache-dir \
     "numpy<2" \
     onnxruntime \
@@ -32,14 +32,13 @@ RUN . /opt/ros/humble/setup.sh && \
     colcon build --symlink-install
 
 RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc && \
-    echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc
+    echo "source /ros2_ws/install/setup.bash" >> /root/.bashrc && \
+    echo "export ROS_LOCALHOST_ONLY=0" >> /root/.bashrc && \
+    echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> /root/.bashrc
 
-RUN echo '#!/bin/bash\n\
-set -e\n\
-source /opt/ros/humble/setup.bash\n\
-source /ros2_ws/install/setup.bash\n\
-exec "$@"' > /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+# Script entrypoint corretto
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
