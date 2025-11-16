@@ -12,9 +12,9 @@ import time
 from collections import deque
 import onnxruntime as ort
 
-class LaneKeeping(Node):
+class LaneKeepingCNN(Node):
     def __init__(self):
-        super().__init__('lane_keeping')
+        super().__init__('lane_keeping_cnn')
         
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
         self.image_sub = self.create_subscription(
@@ -67,9 +67,6 @@ class LaneKeeping(Node):
     def _load_neural_network_onnx(self):
         self.get_logger().info("Loading ONNX model...")
         try:
-            # ⭐ SOLUZIONE: Usa get_package_share_directory()
-            # Questo trova il package indipendentemente da dove lo lanci!
-            
             try:
                 # Prova prima il package 'line_follower_CNN'
                 package_share_directory = get_package_share_directory('line_follower_CNN')
@@ -92,7 +89,7 @@ class LaneKeeping(Node):
                         else:
                             raise FileNotFoundError(f"Modello ONNX non trovato in nessuna posizione!")
                 
-                self.get_logger().info(f"✅ Modello trovato: {model_path}")
+                self.get_logger().info(f"Modello trovato: {model_path}")
                 
             except Exception as e:
                 # Se get_package_share_directory fallisce, usa path relativo
@@ -109,11 +106,11 @@ class LaneKeeping(Node):
             sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
             sess_options.intra_op_num_threads = 4
             session = ort.InferenceSession(model_path, sess_options)
-            self.get_logger().info("✅ Model loaded successfully!")
+            self.get_logger().info("Model loaded successfully!")
             return session
             
         except Exception as e:
-            self.get_logger().error(f"❌ Error loading model: {e}")
+            self.get_logger().error(f"Error loading model: {e}")
             self.get_logger().error(f"Current working directory: {os.getcwd()}")
             self.get_logger().error(f"Files in current directory: {os.listdir('.')}")
             raise
@@ -370,7 +367,7 @@ class LaneKeeping(Node):
             combined_seg[continua_mask > 0] = [0, 255, 0]
             
             combined = np.hstack([debug_img, combined_seg])
-            cv2.imshow('ANGULAR FIXED - Correct steering direction', combined)
+            cv2.imshow('Correct steering direction', combined)
             cv2.waitKey(1)
         except Exception as e:
             self.get_logger().error(f'Debug error: {e}')
@@ -378,7 +375,7 @@ class LaneKeeping(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = LaneKeeping()
+    node = LaneKeepingCNN()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
